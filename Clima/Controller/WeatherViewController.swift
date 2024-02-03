@@ -9,18 +9,37 @@ import UIKit
 
 class WeatherViewController: UIViewController  {
     
+    //MARK: - IBOutlet
     @IBOutlet weak var searchTextFiled: UITextField!
     @IBOutlet weak var conditionImageView: UIImageView!
     @IBOutlet weak var temperatureLabel: UILabel!
     @IBOutlet weak var cityLabel: UILabel!
     
-    let weatherManageer = WeatherManager()
+    //MARK: - Delegater
+    var weatherManager = WeatherManager()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         searchTextFiled.delegate = self // able to detect ex.able to know when textfield start editor by user
-//        weatherManageer.delegate = self
+        weatherManager.delegate = self // ตั่งค่า class ปัจจุบันเป็น class ตัวแทน(เชื่ิอม) (ตัว delegate) ช่วยบอกเชื่อมกับweatherManager
+                                    // setค่าของthis class -> weatherManger.delegate = ins(class-struct: WeatherViewController)
+                                    // then .delegate(?) จะได้ไม่เป็น nil และ ถ้าdataที่ดึงมีปัญหาเนื่องจาก delegate
+                                    // self.delegate?.didUpdateWeather(weather: weatherModel) ดังนั้นมันก็จะpassข้่าม dataที่มีปัญหาหานั้น
+                    // เพราะ delegate คือ การส่ง data จาก Manager -> Controller ผ่านfunction in rule of protocal them
+                    // เพื่อ update data ใน controller ที่มีการเชื่อต่อกับ Manager
+        
+                    // sumary delegate
+                    // สิ่งที่เราต้องทำเพื่อเชื่อต่อเพื่อใช้บริการผ่านManagerClass คือ <ทำfunction รับข้อมูลสภาพอากาศ>
+                    // ManagerClass เราต้องเขียน featchWeather ซึ่งเป็น fuction ที่ดึงข้อมูลล่าสุด(doSomeThing)และมีการเรียกใช้
+                    // function ภายใต้เงื่อนไขของ protocal   self.delegate?.didUpdateWeather(weather: weatherModel)
+                    // เพื่อเป็นการ auto run -> function of class(WeatherVC) ที่เป็นตัวเชื่อมตัอทั้งหมดของ
+                    // WeatherMangaer  ผ่าน function เงื่อนไขของ protocal
+                    //      ตัวทำข้อมูล และ ส่ง                     ตัวรับข้อมูล(หลายตัว)
+                    // WeatherMangaer (SERVER)<-- (CLIENT) WeatherVC1:PT(WeatherDelegate)
+                                            //<-- (CLIENT) WeatherVC2:PT(WeatherDelegate)
+                                            //<-- (CLIENT) WeatherVC3:PT(WeatherDelegate)
+
     }
     
     @IBAction func searchPressed(_ sender: UIButton) {
@@ -58,20 +77,15 @@ class WeatherViewController: UIViewController  {
         
     }
     
-    func didUpdateWeather(weather:WeatherModel){
-        print(weather.temperature)
-        
-    }
     
 }
 // Before set Delegate to UIcontroller -> you need to set CG_NUMERICS_SHOW_BACKTRACE environmental variable.(loadview)
 // action btw keyboard with pressding "GO"
 extension WeatherViewController : WeatherDelegate {
-    func didUpateWeather(weather: WeatherModel) {
-        print("")
+    func didUpdateWeather(weather: WeatherModel) {
+        print("didUpdateWeather")
+        print(weather)
     }
-    
-    
 }
 
 
@@ -87,7 +101,7 @@ extension WeatherViewController : UITextFieldDelegate{
     func textFieldDidEndEditing(_ textField: UITextField) {
         print(searchTextFiled.text!)
         if let cityName = searchTextFiled.text {
-            weatherManageer.featchWeather(cityName: cityName)
+            weatherManager.featchWeather(cityName: cityName)
         }
         searchTextFiled.text = ""
         

@@ -7,11 +7,16 @@
 
 import Foundation
 //https://api.openweathermap.org/data/2.5/weather?q=london&appid=f11f83cfb4666257b1b4d73e8b9fb4f6
+
 protocol WeatherDelegate {
-    func didUpateWeather(weather: WeatherModel)
+    func didUpdateWeather(weather: WeatherModel)
 }
+
+
+//MARK: - Delegater
 struct WeatherManager  {
-//    let delegate: WeatherDelegate?
+    
+    var  delegate: WeatherDelegate?
     let  weatherURL = "https://api.openweathermap.org/data/2.5/weather?appid=f11f83cfb4666257b1b4d73e8b9fb4f6&units=metric"
     
     func featchWeather (cityName :  String)  {
@@ -19,6 +24,7 @@ struct WeatherManager  {
         performRequest(urlString: urlString)
         print(urlString)
     }
+    
     func performRequest(urlString : String){
         if let url = URL(string: urlString){
             let session  = URLSession(configuration: .default)
@@ -30,9 +36,9 @@ struct WeatherManager  {
                 
                 if let safeDate = data {
                     if let weatherModel = parseJSON(weatherData: safeDate){
-                        let weatherVC = WeatherViewController()
-                        weatherVC.didUpdateWeather(weather: weatherModel)
-//                        delegate?.didUpateWeather(weather: weatherModel)
+//                        let weatherVC = WeatherViewController()
+//                        weatherVC.didUpdateWeather(weather: weatherModel)
+                        self.delegate?.didUpdateWeather(weather: weatherModel)
                     }
                 }
             }
@@ -41,7 +47,7 @@ struct WeatherManager  {
             task.resume()
         }
     }
-    
+
     func parseJSON(weatherData : Data) -> WeatherModel? {
         let decoder = JSONDecoder()
         do {
